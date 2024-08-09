@@ -1,68 +1,56 @@
-#!/usr/bin/python3
-"""
-Solution to the nqueens problem
-"""
 import sys
 
 
-def backtrack(r, n, cols, pos, neg, board):
-    """
-    backtrack function to find solution
-    """
-    if r == n:
-        res = []
-        for l in range(len(board)):
-            for k in range(len(board[l])):
-                if board[l][k] == 1:
-                    res.append([l, k])
-        print(res)
+def is_safe(board, row, col, N):
+    # Check this column on upper rows
+    for i in range(row):
+        if board[i] == col or \
+                board[i] - i == col - row or \
+                board[i] + i == col + row:
+            return False
+    return True
+
+
+def solve_nqueens_util(board, row, N, solutions):
+    if row == N:
+        # A solution is found, append the board configuration to solutions
+        solution = [[i, board[i]] for i in range(N)]
+        solutions.append(solution)
         return
 
-    for c in range(n):
-        if c in cols or (r + c) in pos or (r - c) in neg:
-            continue
-
-        cols.add(c)
-        pos.add(r + c)
-        neg.add(r - c)
-        board[r][c] = 1
-
-        backtrack(r+1, n, cols, pos, neg, board)
-
-        cols.remove(c)
-        pos.remove(r + c)
-        neg.remove(r - c)
-        board[r][c] = 0
+    for col in range(N):
+        if is_safe(board, row, col, N):
+            board[row] = col
+            solve_nqueens_util(board, row + 1, N, solutions)
+            # Backtrack (not necessary to reset, as it will be overwritten)
 
 
-def nqueens(n):
-    """
-    Solution to nqueens problem
-    Args:
-        n (int): number of queens. Must be >= 4
-    Return:
-        List of lists representing coordinates of each
-        queen for all possible solutions
-    """
-    cols = set()
-    pos_diag = set()
-    neg_diag = set()
-    board = [[0] * n for i in range(n)]
-
-    backtrack(0, n, cols, pos_diag, neg_diag, board)
+def solve_nqueens(N):
+    board = [-1] * N
+    solutions = []
+    solve_nqueens_util(board, 0, N, solutions)
+    return solutions
 
 
-if __name__ == "__main__":
-    n = sys.argv
-    if len(n) != 2:
+def main():
+    if len(sys.argv) != 2:
         print("Usage: nqueens N")
         sys.exit(1)
+
     try:
-        nn = int(n[1])
-        if nn < 4:
-            print("N must be at least 4")
-            sys.exit(1)
-        nqueens(nn)
+        N = int(sys.argv[1])
     except ValueError:
         print("N must be a number")
         sys.exit(1)
+
+    if N < 4:
+        print("N must be at least 4")
+        sys.exit(1)
+
+    solutions = solve_nqueens(N)
+    for solution in solutions:
+        print(solution)
+
+
+if __name__ == "__main__":
+    main()
